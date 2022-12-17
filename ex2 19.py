@@ -1,6 +1,8 @@
-# Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
-# License: BSD 3 clause
+#TODO: make more feauters
+#TODO: adujt labels
+#TODO: add comments
 
+#Bar Oren#
 # Standard scientific Python imports
 import matplotlib.pyplot as plt
 
@@ -140,6 +142,28 @@ def logisticRegression(featureA,featureB):
     predicted2 = cross_val_predict(logistic_classifier, X_scaled, Y, cv=10)
     print("Logistic regression using [featureA, featureB] features crossvalidation:\n%s\n"% ( metrics.classification_report( expected,predicted2)))
     print("Confusion matrix:\n%s" % metrics.confusion_matrix(expected, predicted2))
+
+
+def twoDGraph(feature1,feature2):
+    fig = plt.figure()
+    fig.suptitle('feature 1: sum of matrix, for 0,and 1 ', fontsize=14)
+    ax = fig.add_subplot()
+    ax.scatter(feature1, feature2,c=digits.target[indices_0_1])
+    ax.set_xlabel('sum_of_matrix')
+    ax.set_ylabel('digit')
+    fig.show()
+    
+    
+def threeDGraph(feature1,feature2,feature3):
+    fig = plt.figure()
+    fig.suptitle('feature 1: sum of matrix, for 0,and 1 ', fontsize=14)
+    ax = fig.gca(projection='3d')
+    ax.scatter(feature1, feature2,feature3,c=digits.target[indices_0_1])
+    ax.set_xlabel('sum_of_matrix')
+    ax.set_ylabel('digit')
+    ax.set_zlabel('digit')
+    fig.show()
+    
 #q 19 : 
     ###############
 
@@ -152,32 +176,10 @@ for image in digits.images[indices_0_1]:
     matSumList.append(matSum(image))
     vertVar.append(column_sum_variance(image))
     horVar.append(row_sum_variance(image))
+twoDGraph(matSumList,digits.target[indices_0_1])
+threeDGraph(matSumList, vertVar, horVar)
+logisticRegression(matSumList, vertVar)
 
-#logisticRegression(matSumList, vertVar)
-fig = plt.figure()
-fig.suptitle('feature 1: sum of matrix, for 0,and 1 ', fontsize=14)
-ax = fig.add_subplot()
-ax.scatter(matSumList, digits.target[indices_0_1],c=digits.target[indices_0_1])
-ax.set_xlabel('sum_of_matrix')
-ax.set_ylabel('digit')
-fig.show()
-
-fig = plt.figure()
-fig.suptitle('feature 1: sum of matrix, for 0,and 1 ', fontsize=14)
-ax = fig.add_subplot()
-ax.scatter(matSumList, vertVar,c=digits.target[indices_0_1])
-ax.set_xlabel('sum_of_matrix')
-ax.set_ylabel('digit')
-fig.show()
-
-fig = plt.figure()
-fig.suptitle('feature 1: sum of matrix, for 0,and 1 ', fontsize=14)
-ax = fig.gca(projection='3d')
-ax.scatter(matSumList, vertVar,horVar,c=digits.target[indices_0_1])
-ax.set_xlabel('sum_of_matrix')
-ax.set_ylabel('digit')
-ax.set_zlabel('digit')
-fig.show()
 #print("mat",matSumList,"\n",vertVar,"\n",horVar,digits.target[indices_0_1])
 
 #predicted,X_test,y_test=classification(matSumList)
