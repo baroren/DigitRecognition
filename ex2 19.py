@@ -18,6 +18,8 @@ digits = datasets.load_digits()
 indices_0_1 = np.where(np.logical_and(digits.target >=0 , digits.target <= 1))
 
 matSumList=[]
+centerMatSumList=[]
+centerDifList=[]
 vertSim=[]
 horSim=[]
 vertVar=[]
@@ -41,37 +43,39 @@ def defualtFeature():
  
     
 def matSum(image):
-    return(image.sum())
+    return image.sum()
+    
+
+def vert_sim(matrix):
+    return np.sum(abs(matrix-np.fliplr(matrix)))
+    
+def sum_center_area(matrix):
+    row,col = matrix.shape
+    center_sum=np.sum(matrix[row//2-row//4:row//2+row//4,col//2-col//8:col//2+col//8])
+    return center_sum
+
+def hor_sim(matrix):
+    return np.sum(abs(matrix-np.flipud(matrix)))
+
+
+def center_Parm_dif(matrix):
+     centerSum=sum_center_area(matrix)
+        # Determine the dimensions of the matrix
+     rows = len(matrix)
+     cols = len(matrix[0])
+    
+     # Use list comprehension to iterate over the elements on the perimeter of the matrix
+     perimeter_sum = sum([matrix[row][col] for row in range(rows) for col in range(cols) if row == 0 or row == rows - 1 or col == 0 or col == cols - 1])
+    
+     # Return the sum
+     return abs(perimeter_sum-centerSum)
     
 def column_sum_variance(matrix):
-  # Get the number of rows and columns in the matrix
-  cols = len(matrix[0])
-  
-  # Sum the values in each column
-  column_sums = [sum(column) for column in zip(*matrix)]
-  
-  # Calculate the mean of the column sums
-  mean = sum(column_sums) / cols
-  
-  # Calculate the variance of the column sums
-  variance = sum((x - mean)**2 for x in column_sums) / cols
-  
-  return variance
+   return np.var(np.sum(matrix, axis=0))
 
 def row_sum_variance(matrix):
-  # Get the number of rows and columns in the matrix
-  rows = len(matrix)
-  
-  # Sum the values in each row
-  row_sums = [sum(row) for row in matrix]
-  
-  # Calculate the mean of the row sums
-  mean = sum(row_sums) / rows
-  
-  # Calculate the variance of the row sums
-  variance = sum((x - mean)**2 for x in row_sums) / rows
-  
-  return variance
+    return np.var(np.sum(matrix, axis=1))
+
 
 
 def classification():
@@ -120,9 +124,9 @@ def predic(predicted,X_test,y_test):
         ax.set_title(f" {prediction}")
 
 
-def logisticRegression(featureA,featureB):
+def logisticRegression(featureA,featureB,featureC):
         # creating the X (feature) matrix
-    X = np.column_stack((featureA, featureB))
+    X = np.column_stack((featureA, featureB,featureC))
     # scaling the values for better classification performance
     X_scaled = preprocessing.scale(X)
     # the predicted outputs
@@ -144,24 +148,24 @@ def logisticRegression(featureA,featureB):
     print("Confusion matrix:\n%s" % metrics.confusion_matrix(expected, predicted2))
 
 
-def twoDGraph(feature1,feature2):
+def twoDGraph(feature1,feature2,label1,label2):
     fig = plt.figure()
     fig.suptitle('feature 1: sum of matrix, for 0,and 1 ', fontsize=14)
     ax = fig.add_subplot()
     ax.scatter(feature1, feature2,c=digits.target[indices_0_1])
-    ax.set_xlabel('sum_of_matrix')
-    ax.set_ylabel('digit')
+    ax.set_xlabel(label1)
+    ax.set_ylabel(label2)
     fig.show()
     
     
-def threeDGraph(feature1,feature2,feature3):
+def threeDGraph(feature1,feature2,feature3,label1,label2,label3):
     fig = plt.figure()
     fig.suptitle('feature 1: sum of matrix, for 0,and 1 ', fontsize=14)
     ax = fig.gca(projection='3d')
     ax.scatter(feature1, feature2,feature3,c=digits.target[indices_0_1])
-    ax.set_xlabel('sum_of_matrix')
-    ax.set_ylabel('digit')
-    ax.set_zlabel('digit')
+    ax.set_xlabel(label1)
+    ax.set_ylabel(label2)
+    ax.set_zlabel(label3)
     fig.show()
     
 #q 19 : 
@@ -176,9 +180,28 @@ for image in digits.images[indices_0_1]:
     matSumList.append(matSum(image))
     vertVar.append(column_sum_variance(image))
     horVar.append(row_sum_variance(image))
-twoDGraph(matSumList,digits.target[indices_0_1])
-threeDGraph(matSumList, vertVar, horVar)
-logisticRegression(matSumList, vertVar)
+    centerMatSumList.append(sum_center_area(image))
+    centerDifList.append(center_Parm_dif(image))
+    vertSim.append(vert_sim(image))
+    horSim.append(hor_sim(image))
+    
+twoDGraph(matSumList,digits.target[indices_0_1],"sum_of_matrix","digit")
+twoDGraph(vertVar,digits.target[indices_0_1],"sum_of_matrix","sum_of_center_matrix")
+twoDGraph(horVar,digits.target[indices_0_1],"sum_of_matrix","sum_of_center_matrix")
+twoDGraph(centerMatSumList,digits.target[indices_0_1],"sum_of_matrix","sum_of_center_matrix")
+twoDGraph(vertSim,digits.target[indices_0_1],"sum_of_matrix","sum_of_center_matrix")
+twoDGraph(horSim,digits.target[indices_0_1],"sum_of_matrix","sum_of_center_matrix")
+twoDGraph(centerDifList,digits.target[indices_0_1],"sum_of_matrix","sum_of_center_matrix")
+
+
+
+threeDGraph(centerMatSumList, vertVar, horVar,"center_sum_of_matrix","vertical var","horozontal var")
+threeDGraph(centerMatSumList, vertSim, matSumList,"sum_of_matrix","center_sum_matrix","horozontal var")
+threeDGraph(centerMatSumList, centerDifList, matSumList,"sum_of_matrix","center_sum_matrix","horozontal var")
+
+#logisticRegression(matSumList, vertVar)
+logisticRegression(centerMatSumList, vertSim, matSumList)
+
 
 #print("mat",matSumList,"\n",vertVar,"\n",horVar,digits.target[indices_0_1])
 
